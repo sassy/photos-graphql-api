@@ -3,6 +3,13 @@ import internal = require("stream");
 
 
 const typeDefs = gql`
+type User {
+  githubLogin: ID!
+  name: String
+  avatar: String
+  postedPhotos: [Photo!]!
+}
+
 enum PhotoCategory {
   SELFIE
   PORTRAIT
@@ -17,6 +24,7 @@ type Photo {
   name: String!
   description: String
   category: PhotoCategory!
+  postedBy: User!
 }
 
 input PostPhotoInput {
@@ -35,8 +43,36 @@ type Mutation {
 }
 `;
 
+const users = [
+  { 'githubLogin' : 'mHattrup', 'name': 'Mike Hattrup'},
+  { 'githubLogin' : 'gPlake', 'name': 'Glen Plake'},
+  { 'githubLogin' : 'sSchmldt', 'name': 'Scot Schmidt'}
+]
+
 let _id = 0;
-const photos: any[] = [];
+const photos: any[] = [
+  {
+    "id": "1",
+    "name": "hogehoge",
+    "description": "hogehoge",
+    "category": "ACTION",
+    "githubUser": "gPlake"
+  },
+  {
+    "id": "2",
+    "name": "foo",
+    "description": "bar",
+    "category": "SELFIE",
+    "githubUser": "sSchmldt"
+  },
+  {
+    "id": "3",
+    "name": "bar",
+    "description": "barbar",
+    "category": "LANDSCAPE",
+    "githubUser": "sSchmldt"
+  }
+];
 
 const resolvers = {
   Query: {
@@ -54,7 +90,11 @@ const resolvers = {
     }
   },
   Photo: {
-    url: (parent:any) => `http://yoursite.com/img/${parent.id}.jpg`
+    url: (parent:any) => `http://yoursite.com/img/${parent.id}.jpg`,
+    postedBy: (parent:any) =>  users.find(u => u.githubLogin === parent.githubUser)
+  },
+  User: {
+    postedPhotos: (parent:any) => photos.filter(p => p.githubUser === parent.githubLogin)
   }
 };
 

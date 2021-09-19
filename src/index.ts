@@ -2,31 +2,49 @@ import { ApolloServer, gql, } from "apollo-server";
 
 
 interface Photo {
+  url: string;
   name: string;
   description: string;
 }
 
 const typeDefs = gql`
+type Photo {
+  id: ID!
+  url: String!
+  name: String!
+  description: String
+}
+
 type Query {
   totalPhotos: Int!
+  allPhotos: [Photo!]!
 }
 
 type Mutation {
-  postPhoto(name: String!  description: String): Boolean!
+  postPhoto(name: String!  description: String): Photo!
 }
 `;
 
+let _id = 0;
 const photos: Photo[] = [];
 
 const resolvers = {
   Query: {
-    totalPhotos: () => photos.length
+    totalPhotos: () => photos.length,
+    allPhotos: () => photos
   },
   Mutation: {
     postPhoto(parent: any, args: Photo) {
-      photos.push(args)
-      return true
+      const newPhoto = {
+        id: _id++,
+        ...args
+      }
+      photos.push(newPhoto);
+      return newPhoto;
     }
+  },
+  Photo: {
+    url: (parent:any) => `http://yoursite.com/img/${parent.id}.jpg`
   }
 };
 

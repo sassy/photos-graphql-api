@@ -76,4 +76,5 @@ typings/
 
 # mongodb
 db/
+configdb/
 

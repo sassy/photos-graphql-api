@@ -1,8 +1,10 @@
 import { ApolloServer, gql, } from "apollo-server";
-import internal = require("stream");
-
+import { GraphQLScalarType } from "graphql";
+import * as dayjs from 'dayjs';
 
 const typeDefs = gql`
+scalar DateTime
+
 type User {
   githubLogin: ID!
   name: String
@@ -27,6 +29,7 @@ type Photo {
   category: PhotoCategory!
   postedBy: User!
   taggedUsers: [User!]!
+  created: DateTime!
 }
 
 input PostPhotoInput {
@@ -37,7 +40,7 @@ input PostPhotoInput {
 
 type Query {
   totalPhotos: Int!
-  allPhotos: [Photo!]!
+  allPhotos(after: DateTime): [Photo!]!
 }
 
 type Mutation {
@@ -65,21 +68,24 @@ const photos: any[] = [
     "name": "hogehoge",
     "description": "hogehoge",
     "category": "ACTION",
-    "githubUser": "gPlake"
+    "githubUser": "gPlake",
+    "created": "3-28-1977"
   },
   {
     "id": "2",
     "name": "foo",
     "description": "bar",
     "category": "SELFIE",
-    "githubUser": "sSchmldt"
+    "githubUser": "sSchmldt",
+    "created": "1-2-1985"
   },
   {
     "id": "3",
     "name": "bar",
     "description": "barbar",
     "category": "LANDSCAPE",
-    "githubUser": "sSchmldt"
+    "githubUser": "sSchmldt",
+    "created": "2018-04-15T19:09:57.308Z"
   }
 ];
 
@@ -92,7 +98,8 @@ const resolvers = {
     postPhoto(parent: any, args: any) {
       const newPhoto = {
         id: _id++,
-        ...args.input
+        ...args.input,
+        created: dayjs()
       }
       photos.push(newPhoto);
       return newPhoto;
@@ -112,7 +119,14 @@ const resolvers = {
       .filter(tag => tag.userID === parent.id)
       .map(tag => tag.photoID)
       .map(photoID => photos.find(p => p.id === photoID))
-  }
+  },
+  DateTime: new GraphQLScalarType({
+    name: `DateTime`,
+    description: `A valid date time value`,
+    parseValue: value => dayjs(value),
+    serialize: value => dayjs(value).format(),
+    parseLiteral: (ast:any) => ast.value
+  })
 };
 
 const server = new ApolloServer({

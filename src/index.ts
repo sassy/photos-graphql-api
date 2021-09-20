@@ -1,58 +1,14 @@
-import { ApolloServer, gql, } from "apollo-server-express";
+import { ApolloServer } from "apollo-server-express";
 import * as express from "express";
-
+import { readFileSync } from 'fs';
 import expressPlayground  from "graphql-playground-middleware-express";
 import { MongoClient } from "mongodb";
 import { resolvers } from './resolvers';
 
-const typeDefs = gql`
-scalar DateTime
-
-type User {
-  githubLogin: ID!
-  name: String
-  avatar: String
-  postedPhotos: [Photo!]!
-  inPhotos: [Photo!]!
-}
-
-enum PhotoCategory {
-  SELFIE
-  PORTRAIT
-  ACTON
-  LANDSCAPE
-  GRAPHIC
-}
-
-type Photo {
-  id: ID!
-  url: String!
-  name: String!
-  description: String
-  category: PhotoCategory!
-  postedBy: User!
-  taggedUsers: [User!]!
-  created: DateTime!
-}
-
-input PostPhotoInput {
-  name: String!
-  category: PhotoCategory=PORTRAIT
-  description: String
-}
-
-type Query {
-  totalPhotos: Int!
-  allPhotos(after: DateTime): [Photo!]!
-}
-
-type Mutation {
-  postPhoto(input: PostPhotoInput!): Photo!
-}
-`;
-
 
 async function startApolloServer() {
+  const typeDefs = readFileSync(__dirname + '/schema/typeDefs.graphql', 'utf-8');
+
   const MONGO_DB = "mongodb://localhost:27017/test"
   const client = await MongoClient.connect(
     MONGO_DB,

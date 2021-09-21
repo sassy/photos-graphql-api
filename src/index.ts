@@ -1,15 +1,16 @@
 import { ApolloServer } from "apollo-server-express";
-import * as express from "express";
+import express from "express";
 import { readFileSync } from 'fs';
 import expressPlayground  from "graphql-playground-middleware-express";
 import { MongoClient } from "mongodb";
 import { resolvers } from './resolvers';
+require('dotenv').config();
 
 
 async function startApolloServer() {
   const typeDefs = readFileSync(__dirname + '/schema/typeDefs.graphql', 'utf-8');
 
-  const MONGO_DB = "mongodb://localhost:27017/test"
+  const MONGO_DB = process.env.DB_HOST as string;
   const client = await MongoClient.connect(
     MONGO_DB,
   );

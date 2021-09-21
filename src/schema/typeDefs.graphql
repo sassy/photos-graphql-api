@@ -1,5 +1,10 @@
 scalar DateTime
 
+type AuthPayload {
+    token: String!
+    user: User!
+}
+
 type User {
   githubLogin: ID!
   name: String
@@ -34,10 +39,14 @@ input PostPhotoInput {
 }
 
 type Query {
-  totalPhotos: Int!
+  totalPhotos: Int!  
   allPhotos(after: DateTime): [Photo!]!
+  totalUsers: Int!
+  allUsers: [User!]!
 }
 
 type Mutation {
   postPhoto(input: PostPhotoInput!): Photo!
+  githubAuth(code: String!): AuthPayload!
+  addFakeUsers(count: Int = 1): [User!]!
 }
